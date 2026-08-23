@@ -17,7 +17,12 @@ from tools import data_lookup, document_search, escalation
 
 load_dotenv()
 
-MODEL = "openai/gpt-oss-20b"
+# NOTE: temporarily switched to gpt-oss-120b (from gpt-oss-20b) — same
+# family, tool-calling capable, but a SEPARATE per-model rate-limit bucket
+# on Groq's free tier. Useful if 20b's daily quota is exhausted from
+# testing; switch back to "openai/gpt-oss-20b" once quota resets if you
+# want to keep the smaller/faster model for the actual submission.
+MODEL = "openai/gpt-oss-120b"
 
 
 # ---------------------------------------------------------
