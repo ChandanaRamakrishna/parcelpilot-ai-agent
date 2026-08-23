@@ -54,5 +54,5 @@ docs/           architecture.md, product_note.md, demo_script.md
 - [Architecture](docs/architecture.md)
 - [Product note](docs/product_note.md)
 - [Demo script](docs/demo_script.md)
-- AI tool usage: built with Groq as pair-programmer for
-  scaffolding and iteration — see submission notes for detail.
+- AI tool usage: built with Groq as pair-programmer for scaffolding and iteration.
+
