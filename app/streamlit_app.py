@@ -109,7 +109,20 @@ if prompt := st.chat_input("Ask about an order, policy, or issue..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            answer, trace = run_turn(prompt, st.session_state.session)
+            try:
+                answer, trace = run_turn(prompt, st.session_state.session)
+            except Exception:
+                # Catch-all so a provider hiccup (rate limit, transient
+                # 400/500, etc.) shows as a normal chat message instead
+                # of a raw Python traceback in front of a user or grader.
+                # The full exception still surfaces in Streamlit Cloud's
+                # logs (Manage app) for debugging.
+                answer, trace = (
+                    "Sorry, I ran into a temporary issue processing that. "
+                    "Please try rephrasing your question or asking again "
+                    "in a moment.",
+                    [],
+                )
         _render_tool_trace(trace)
         st.markdown(answer)
 

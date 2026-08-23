@@ -352,7 +352,7 @@ def run_turn(
         # than one harmless extra tool call.
         tool_choice = "auto" if tool_called_this_turn else "required"
 
-        response = _get_client().chat.completions.create(
+        request_kwargs = dict(
             model=MODEL,
             max_tokens=1500,
             # Low temperature: this is a support agent making structural
@@ -371,8 +371,33 @@ def run_turn(
                 *(_message_to_dict(message) for message in _windowed_history(session.conversation)),
             ],
             tools=_tool_schemas_for_groq(),
-            tool_choice=tool_choice,
         )
+
+        try:
+            response = _get_client().chat.completions.create(
+                tool_choice=tool_choice,
+                **request_kwargs,
+            )
+        except Exception as e:
+            # tool_choice="required" forces every response to be a tool
+            # call — but sometimes the model legitimately has nothing
+            # tool-relevant to do (e.g. the user's request is too vague
+            # to call anything yet, and the right move is a clarifying
+            # question). Some models handle that mismatch by silently
+            # returning no tool_calls (handled elsewhere below); others
+            # (observed with gpt-oss-120b) hard-error instead
+            # ("tool_use_failed" / 400), with the model's intended reply
+            # visible in the error's failed_generation field but not
+            # otherwise recoverable. Rather than crash the whole turn,
+            # retry once with tool_choice="auto" so the model can answer
+            # in plain text if that's genuinely the right move.
+            if tool_choice == "required" and "tool_use_failed" in str(e):
+                response = _get_client().chat.completions.create(
+                    tool_choice="auto",
+                    **request_kwargs,
+                )
+            else:
+                raise
 
         assistant_message = response.choices[0].message
         session.conversation.append(_message_to_dict(assistant_message))
