@@ -1,4 +1,4 @@
-# ParcelPilot AI Agent — CalQuity 
+# ParcelPilot AI Agent  
 
 Customer-facing support agent addressing **Trust & Reliability**: it reasons
 across policies, SOPs, product docs, customer agreements, and structured
